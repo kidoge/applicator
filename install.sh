@@ -1,7 +1,7 @@
 #!/bin/bash
-
-CONFIG_INSTALL_START="INSTALL_SH_CONFIG_INSERTION_START"
-CONFIG_INSTALL_END="INSTALL__SH_CONFIG_INSERTION_END"
+CONFIG_INSTALL_MARKER="INSTALL_SH_CONFIG_INSERTION"
+CONFIG_INSTALL_START="${CONFIG_INSTALL_MARKER}_START"
+CONFIG_INSTALL_END="${CONFIG_INSTALL_MARKER}_END"
 
 VERBOSE=0
 LINE_PREFIX=""
@@ -37,13 +37,43 @@ first_char() {
     head -c 1 $file
 }
 
-recursion_check() {
-    file = "$1"
+detect_recursion() {
+  file="$1"
+  grep -qrInsE "(${CONFIG_INSTALL_START}|${CONFIG_INSTALL_END})" $file
+  if grep -qE "(${CONFIG_INSTALL_START}|${CONFIG_INSTALL_END})" $file; then
+    return 0
+  fi
+  return 1
 }
 
 install_config() {
   file="$1"
+
+  #TODO: generate destination with argument
   destination="${HOME}/.$(basename ${file})"
+
+  # Sanity check on input
+  if detect_recursion $file; then
+    die "Start/end flag detected in config."
+  fi
+
+  # Determine the comment character
+  if [ -z $LINE_PREFIX]; then
+    line_prefix=$(first_char $file)
+  else
+    line_prefix=$LINE_PREFIX
+  fi
+
+  # If file does not exist, create a new one
+  if [ ! -f $destination ]; then
+    echo ${line_prefix}${CONFIG_INSTALL_START} >> ${destination}
+    cat ${file} >> ${destination}
+    echo ${line_prefix}${CONFIG_INSTALL_END} >> ${destination}
+    echo_if_verbose "Existing file not found. File created at: ${destination}"
+    return
+  fi
+
+  # If modfiying existing config file, make a backup first
   backup=${destination}.bak
   cp ${destination} ${backup}
   if [ $? -eq 0 ]; then
@@ -52,19 +82,15 @@ install_config() {
     die "Backup creation failed: ${backup}"
   fi
 
-  if [ ! recursion_check $file ]; then
-    die "Start/end flag detected in config."
-  fi
-
+  # Insert config to existing file, overwriting any previous insertion
   sed "/${CONFIG_INSTALL_START}/,$ d" ${backup} > ${destination}
-  if [ -z $LINE_PREFIX]; then
-      LINE_PREFIX=$(first_char $file)
-  fi
-  echo ${LINE_PREFIX}${CONFIG_INSTALL_START} >> ${destination}
+  echo ${line_prefix}${CONFIG_INSTALL_START} >> ${destination}
   cat ${file} >> ${destination}
-  echo ${LINE_PREFIX}${CONFIG_INSTALL_END} >> ${destination}
+  echo ${line_prefix}${CONFIG_INSTALL_END} >> ${destination}
   sed "1,/${CONFIG_INSTALL_END}/ d" $backup >> ${destination}
+  echo_if_verbose "File updated at: ${destination}"
 
+  # Show vimdiff for confirmation. Undo if cancelled (quit with :cq)
   vimdiff ${destination} ${backup}
   if [ ! $? -eq 0 ]; then
     echo_if_verbose "Rolling back changes for: ${destination}"
@@ -113,7 +139,7 @@ main() {
 
   if [ -d "$1" ]; then
     if [ ! -z "$2" ]; then
-      die_with_help 'In directory mode, only one directory can be installed at a time.' 
+      die_with_help 'In directory mode, only one directory can be installed at a time.'
     fi
     for f in $1/*; do
       if [ ! -d "$f" ]; then

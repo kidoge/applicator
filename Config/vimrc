@@ -10,10 +10,10 @@ set ruler "show row and column numbers
 "text formatting
 set nowrap
 set expandtab       "expand tab to spaces when entered
-set tabstop=4       "
-set shiftwidth=4    "
-set softtabstop=4   "
-set smarttab        "
+set tabstop=2
+set shiftwidth=2
+set softtabstop=2
+set smarttab
 
 "code formatting
 syntax enable   "enable syntax highlighting

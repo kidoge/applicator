@@ -13,13 +13,13 @@ die() {
 
 die_with_help() {
   printf 'ERROR: %s\n' "$1" >&2
-  echo "Try 'bash install.sh --help' for more information."
+  echo "Try 'bash install --help' for more information."
   exit 1
 }
 
 show_help() {
   cat << EOF
-Usage: bash install.sh [OPTION]... [TARGET]...
+Usage: bash install [OPTION]... [TARGET]...
   -h, --help, -?    show help
   -v, --verbose     verbose output
 EOF

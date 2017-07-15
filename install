@@ -13,13 +13,13 @@ die() {
 
 die_with_help() {
   printf 'ERROR: %s\n' "$1" >&2
-  echo "Try 'bash install.sh --help' for more information."
+  echo "Try 'bash install --help' for more information."
   exit 1
 }
 
 show_help() {
   cat << EOF
-Usage: bash install.sh [OPTION]... [TARGET]...
+Usage: bash install [OPTION]... [TARGET]...
   -h, --help, -?    show help
   -v, --verbose     verbose output
 EOF
@@ -90,11 +90,15 @@ install_config() {
   sed "1,/${CONFIG_INSTALL_END}/ d" $backup >> ${destination}
   echo_if_verbose "File updated at: ${destination}"
 
-  # Show vimdiff for confirmation. Undo if cancelled (quit with :cq)
-  vimdiff ${destination} ${backup}
-  if [ ! $? -eq 0 ]; then
-    echo_if_verbose "Rolling back changes for: ${destination}"
-    cp ${backup} ${destination}
+  if diff ${destination} ${backup}; then
+    echo "No change detected for file: ${destination}"
+  else
+    # Show vimdiff for confirmation. Undo if cancelled (quit with :cq)
+    vimdiff ${destination} ${backup}
+    if [ ! $? -eq 0 ]; then
+      echo_if_verbose "Rolling back changes for: ${destination}"
+      cp ${backup} ${destination}
+    fi
   fi
 }
 

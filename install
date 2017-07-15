@@ -90,11 +90,15 @@ install_config() {
   sed "1,/${CONFIG_INSTALL_END}/ d" $backup >> ${destination}
   echo_if_verbose "File updated at: ${destination}"
 
-  # Show vimdiff for confirmation. Undo if cancelled (quit with :cq)
-  vimdiff ${destination} ${backup}
-  if [ ! $? -eq 0 ]; then
-    echo_if_verbose "Rolling back changes for: ${destination}"
-    cp ${backup} ${destination}
+  if diff ${destination} ${backup}; then
+    echo "No change detected for file: ${destination}"
+  else
+    # Show vimdiff for confirmation. Undo if cancelled (quit with :cq)
+    vimdiff ${destination} ${backup}
+    if [ ! $? -eq 0 ]; then
+      echo_if_verbose "Rolling back changes for: ${destination}"
+      cp ${backup} ${destination}
+    fi
   fi
 }
 

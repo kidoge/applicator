@@ -12,3 +12,6 @@ alias gd="git diff"
 alias gdc="git diff --cached"
 alias gc="git checkout"
 alias gl="git log"
+
+# Map caps lock to ctrl
+setxkbmap -option ctrl:nocaps

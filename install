@@ -5,6 +5,7 @@ CONFIG_INSTALL_END="${CONFIG_INSTALL_MARKER}_END"
 
 VERBOSE=0
 LINE_PREFIX=""
+FORCE=0
 
 die() {
   printf 'ERROR: %s\n' "$1" >&2
@@ -15,15 +16,6 @@ die_with_help() {
   printf 'ERROR: %s\n' "$1" >&2
   echo "Try 'bash install --help' for more information."
   exit 1
-}
-
-show_help() {
-  cat << EOF
-Usage: bash install [OPTION]... [TARGET]...
-  -h, --help, -?    show help
-  -v, --verbose     verbose output
-EOF
-  echo $help
 }
 
 echo_if_verbose() {
@@ -94,16 +86,30 @@ install_config() {
     echo "No change detected for file: ${destination}"
   else
     # Show vimdiff for confirmation. Undo if cancelled (quit with :cq)
-    vimdiff ${destination} ${backup}
-    if [ ! $? -eq 0 ]; then
-      echo_if_verbose "Rolling back changes for: ${destination}"
-      cp ${backup} ${destination}
+    if [ $FORCE -eq 0 ]; then
+      vimdiff ${destination} ${backup}
+      if [ ! $? -eq 0 ]; then
+        echo_if_verbose "Rolling back changes for: ${destination}"
+        cp ${backup} ${destination}
+      fi
     fi
   fi
 }
 
-main() {
+show_help() {
+  cat << EOF
+Usage: bash install [OPTION]... [TARGET]...
+  -h, --help, -?    show help
+  -v, --verbose     verbose output
+  -p, --prefix      force a prefix character for start/end flags
+                    uses first character of the file if unspecified
+  -f, --force       apply all changes without review
+EOF
+  echo $help
+}
 
+
+main() {
 # Handle arguments
 # Taken from: http://mywiki.wooledge.org/BashFAQ/035
   while :; do
@@ -117,6 +123,9 @@ main() {
     -p|--prefix)
       LINE_PREFIX=$2
       shift
+      ;;
+    -f|--force)
+      FORCE=1
       ;;
     --)
       shift

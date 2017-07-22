@@ -1,12 +1,22 @@
-#
+# virtualenv macros
 
+VENV_HOME="~/virtualenv/"
+venvc() {
+  [ -z "$1" ] || virtualenv ${VENV_HOME}$1
+}
+
+venv() {
+  [ -z "$1" ] || source ${VENV_HOME}$1/bin/activate
+}
+
+# colorful
 force_color_prompt=yes
-
-IGNOREEOF=42
-
 alias ls="ls --color=auto"
 
+# always use vim
 alias vi="vim"
+
+# git shortcuts
 alias gst="git status"
 alias gd="git diff"
 alias gdc="git diff --cached"
@@ -15,3 +25,6 @@ alias gl="git log"
 
 # Map caps lock to ctrl
 setxkbmap -option ctrl:nocaps
+
+# Prevent Ctrl-D grief
+IGNOREEOF=42

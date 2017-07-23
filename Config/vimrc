@@ -4,12 +4,13 @@
 
 colorscheme desert
 
-set noacd "automatic switch current directory
+set acd   "automatic switch current directory
 set ruler "show row and column numbers
+set paste "stop the staircase indentation when pasting
 
 "text formatting
 set nowrap
-set expandtab       "expand tab to spaces when entered
+set expandtab
 set tabstop=2
 set shiftwidth=2
 set softtabstop=2

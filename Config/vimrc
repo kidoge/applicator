@@ -8,6 +8,7 @@ set acd   "automatic switch current directory
 set ruler "show row and column numbers
 set paste "stop the staircase indentation when pasting
 set number
+set modeline
 
 "text formatting
 set nowrap

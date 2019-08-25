@@ -1,6 +1,0 @@
-#!/bin/bash
-
-git config --global credential.helper cache
-git config --global core.editor "vim"
-git config --global user.name "Kidon Son"
-git config --global user.email "kidonson@gmail.com"

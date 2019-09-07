@@ -1,0 +1,43 @@
+#!/bin/bash
+
+source "functions.sh"
+
+PASS_COUNT=0
+TOTAL_COUNT=0
+
+function cleanup() {
+  if [ $PASS_COUNT -eq $TOTAL_COUNT ]; then
+    echo "ALL PASSED"
+  else
+    echo "$PASS_COUNT / $TOTAL_COUNT PASSED"
+  fi
+}
+
+trap cleanup EXIT
+
+function run_test() {
+  $1
+  if [ $? -ne 0 ]; then
+    result="PASS"
+    let "PASS_COUNT+=1"   
+  else
+    result="FAIL"
+  fi
+  let "TOTAL_COUNT+=1"
+
+  printf "$result   $1\n"
+}
+
+function test_echo_if_verbose_unset() {
+  test ! -z "$(VERBOSE= echo_if_verbose test)"
+}
+function test_echo_if_verbose_set() {
+  test -z "$(VERBOSE=1 echo_if_verbose test)"
+}
+
+#find all functions with names that start with "test_", then run them
+for func_decl in $(declare -F | cut -d " " -f 3); do
+  if [[ $func_decl =~ ^test_ ]]; then
+    run_test "$func_decl"
+  fi
+done

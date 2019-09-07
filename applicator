@@ -1,113 +1,37 @@
 #!/bin/bash
-CONFIG_INSTALL_MARKER="INSTALL_SH_CONFIG_INSERTION"
+
+# Globbing to include hidden files (e.g. when looping through files with *)
+shopt -s dotglob 
+
+source "functions.sh"
+
+INSTALL_DIR="${HOME}"
+CONFIG_INSTALL_MARKER="APPLICATOR_CONFIG_INSERTION"
 CONFIG_INSTALL_START="${CONFIG_INSTALL_MARKER}_START"
 CONFIG_INSTALL_END="${CONFIG_INSTALL_MARKER}_END"
 
 VERBOSE=0
-LINE_PREFIX=""
 FORCE=0
 
-die() {
-  printf 'ERROR: %s\n' "$1" >&2
-  exit 1
-}
+FILES=()
+get_input_files() {
+  local input="$(readlink -f $1)"
+  
+  # Ignore git directories
+  [[ $input =~ ".git" ]] && return
 
-die_with_help() {
-  printf 'ERROR: %s\n' "$1" >&2
-  echo "Try 'bash install --help' for more information."
-  exit 1
-}
-
-echo_if_verbose() {
-  if [ ! -z $VERBOSE ]; then
-    echo $@
-  fi
-}
-
-first_char() {
-    file="$1"
-    head -c 1 $file
-}
-
-detect_recursion() {
-  file="$1"
-  grep -qrInsE "(${CONFIG_INSTALL_START}|${CONFIG_INSTALL_END})" $file
-  if grep -qE "(${CONFIG_INSTALL_START}|${CONFIG_INSTALL_END})" $file; then
-    return 0
-  fi
-  return 1
-}
-
-install_config() {
-  file="$1"
-
-  #TODO: generate destination with argument
-  destination="${HOME}/.$(basename ${file})"
-
-  # Sanity check on input
-  if detect_recursion $file; then
-    die "Start/end flag detected in config."
-  fi
-
-  # Determine the comment character
-  if [ -z $LINE_PREFIX]; then
-    line_prefix=$(first_char $file)
-  else
-    line_prefix=$LINE_PREFIX
-  fi
-
-  # If file does not exist, create a new one
-  if [ ! -f $destination ]; then
-    echo ${line_prefix}${CONFIG_INSTALL_START} >> ${destination}
-    cat ${file} >> ${destination}
-    echo ${line_prefix}${CONFIG_INSTALL_END} >> ${destination}
-    echo_if_verbose "Existing file not found. File created at: ${destination}"
+  if [ -f "$input" ]; then
+    FILES+=("$input")
     return
   fi
 
-  # If modfiying existing config file, make a backup first
-  backup=${destination}.bak
-  cp ${destination} ${backup}
-  if [ $? -eq 0 ]; then
-    echo_if_verbose "Backup created at: ${backup}"
-  else
-    die "Backup creation failed: ${backup}"
-  fi
-
-  # Insert config to existing file, overwriting any previous insertion
-  sed "/${CONFIG_INSTALL_START}/,$ d" ${backup} > ${destination}
-  echo ${line_prefix}${CONFIG_INSTALL_START} >> ${destination}
-  cat ${file} >> ${destination}
-  echo ${line_prefix}${CONFIG_INSTALL_END} >> ${destination}
-  sed "1,/${CONFIG_INSTALL_END}/ d" $backup >> ${destination}
-  echo_if_verbose "File updated at: ${destination}"
-
-  if diff ${destination} ${backup}; then
-    echo "No change detected for file: ${destination}"
-  else
-    # Show vimdiff for confirmation. Undo if cancelled (quit with :cq)
-    if [ $FORCE -eq 0 ]; then
-      vimdiff ${destination} ${backup}
-      if [ ! $? -eq 0 ]; then
-        echo_if_verbose "Rolling back changes for: ${destination}"
-        cp ${backup} ${destination}
-      fi
-    fi
+  if [ -d "$input" ]; then
+    for f in $1/*; do
+      echo i2 $f
+      get_input_files $f
+    done
   fi
 }
-
-show_help() {
-  cat << EOF
-Usage: bash install [OPTION]... [TARGET]...
-  -h, --help, -?    show help
-  -v, --verbose     verbose output
-  -p, --prefix      force a prefix character for start/end flags
-                    uses first character of the file if unspecified
-  -f, --force       apply all changes without review
-EOF
-  echo $help
-}
-
 
 main() {
 # Handle arguments
@@ -116,16 +40,21 @@ main() {
     case $1 in
     -h|-\?|--help)
       show_help
+      exit 0
       ;;
     -v|--VERBOSE)
       VERBOSE=1
       ;;
-    -p|--prefix)
-      LINE_PREFIX=$2
-      shift
-      ;;
     -f|--force)
       FORCE=1
+      ;;
+    -d)
+      if [ "$2" ]; then
+        INSTALL_DIR="$2"
+      else
+        die_with_help "\"-d\" requires a non-empty option argument"
+      fi
+      shift
       ;;
     --)
       shift
@@ -135,7 +64,7 @@ main() {
       die_with_help "Unknown option: $1"
       ;;
     *)
-      break;
+      break
       ;;
     esac
 
@@ -146,28 +75,17 @@ main() {
     die_with_help 'TARGET must be specified for installation'
   fi
 
-# Find list of files
-
-  input=( )
-
-  if [ -d "$1" ]; then
-    if [ ! -z "$2" ]; then
-      die_with_help 'In directory mode, only one directory can be installed at a time.'
+  for f in $@; do
+    if [ -e "$f" ]; then
+      get_input_files $f
+    else 
+      die "$f does not exist"
     fi
-    for f in $1/*; do
-      if [ ! -d "$f" ]; then
-        input+=("$f")
-      fi
-    done
-  else
-    while [ "$1" ]; do
-      input+=("$1")
-      shift
-    done
-  fi
+  done
 
-  for f in ${input[@]}; do
-      install_config $f
+  echo FILES:
+  for f in ${FILES[@]}; do
+    install_config_file $f
   done
 }
 

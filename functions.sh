@@ -5,7 +5,7 @@ die() {
 
 die_with_help() {
   printf 'ERROR: %s\n' "$1" >&2
-  echo "Try 'bash install --help' for more information."
+  echo "Try 'bash applicator --help' for more information."
   exit 1
 }
 
@@ -22,6 +22,7 @@ make_backup() {
   local increment=0
   local backup_basename=${destination}.bak
   local backup=${backup_basename}
+
   while [ -f $backup ]; do
     if diff ${backup} ${destination} &>/dev/null; then
       echo "Identical backup found at: ${backup}"

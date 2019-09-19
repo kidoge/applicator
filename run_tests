@@ -70,9 +70,9 @@ TOTAL_COUNT=0
 
 function cleanup() {
   if [ $PASS_COUNT -eq $TOTAL_COUNT ]; then
-    echo "ALL PASSED"
+    printf "[[ \e[1;32mALL PASSED\e[m ]]\n"
   else
-    echo "$PASS_COUNT / $TOTAL_COUNT PASSED"
+    printf "[[ \e[1;31m$PASS_COUNT / $TOTAL_COUNT PASSED\e[m ]]\n"
   fi
 }
 

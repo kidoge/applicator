@@ -19,14 +19,17 @@ make_backup() {
   local destination="$1"
 
   # If modfiying existing config file, make a backup first
-  local backup=${destination}.bak
-  if [ -f $backup ]; then
-    local increment=0
-    while [ -f ${backup}.${increment} ]; do
-      ((increment++))
-    done
-    backup=${backup}.${increment}
-  fi
+  local increment=0
+  local backup_basename=${destination}.bak
+  local backup=${backup_basename}
+  while [ -f $backup ]; do
+    if diff ${backup} ${destination} &>/dev/null; then
+      echo "Identical backup found at: ${backup}"
+      return 0
+    fi
+    backup="${backup_basename}.${increment}"
+    ((increment++))
+  done
   cp ${destination} ${backup}
   if [ $? -eq 0 ]; then
     echo_if_verbose "Backup created at: ${backup}"

@@ -15,31 +15,24 @@ echo_if_verbose() {
   fi
 }
 
-get_comment_prefix() {
-    local file="$1"
-    grep "__APPLICATOR_COMMENT__" $file | head -n1 | sed -nre "s/(.*)__APPLICATOR_COMMENT__.*/\1/p"
-}
-
-detect_already_applied() {
-  local file="$1"
-  if grep -qE "(${CONFIG_INSTALL_START}|${CONFIG_INSTALL_END})" $file; then
-    return 0
-  fi
-  return 1
-}
-
 make_backup() {
   local destination="$1"
 
   # If modfiying existing config file, make a backup first
-  local backup=${destination}.applicator_bak
+  local backup=${destination}.bak
+  if [ -f $backup ]; then
+    local increment=0
+    while [ -f ${backup}.${increment} ]; do
+      ((increment++))
+    done
+    backup=${backup}.${increment}
+  fi
   cp ${destination} ${backup}
   if [ $? -eq 0 ]; then
     echo_if_verbose "Backup created at: ${backup}"
   else
     die "Backup creation failed: ${backup}"
   fi
-  echo ${backup}
 }
 
 create_new_file() {
@@ -110,8 +103,6 @@ show_help() {
 Usage: bash applicator [OPTION]... [TARGET]...
   -h, --help, -?    show help
   -v, --verbose     verbose output
-  -p, --prefix      force a prefix character for start/end flags
-                    uses first character of the file if unspecified
   -f, --force       apply all changes without review
   -d                where to apply config files, defaults to home directory
 EOF

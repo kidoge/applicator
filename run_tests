@@ -2,6 +2,69 @@
 
 source "functions.sh"
 
+
+function test_echo_if_verbose_unset() {
+  test -z "$(VERBOSE= echo_if_verbose test)"
+}
+function test_echo_if_verbose_set() {
+  test ! -z "$(VERBOSE=1 echo_if_verbose test)"
+}
+
+function test_make_backup__file_created() {
+  cat >$SANDBOX/test << EOF
+  this is
+  a test file
+EOF
+  make_backup $SANDBOX/test
+  test -f $SANDBOX/test.bak
+}
+
+function test_make_backup__file_same_content() {
+  cat >$SANDBOX/test << EOF
+  this is
+  a test file
+EOF
+  make_backup $SANDBOX/test
+  test -z "$(diff $SANDBOX/test $SANDBOX/test.bak)"
+}
+
+function test_make_backup__handle_existing_backup() {
+  cat >$SANDBOX/test << EOF
+  this is
+  a test file
+EOF
+  touch $SANDBOX/test.bak
+  make_backup $SANDBOX/test
+  test -f $SANDBOX/test.bak.0
+}
+
+function test_make_backup__handle_multiple_existing_backups() {
+  cat >$SANDBOX/test << EOF
+  this is
+  a test file
+EOF
+  touch $SANDBOX/test.bak
+  touch $SANDBOX/test.bak.0
+  touch $SANDBOX/test.bak.1
+  make_backup $SANDBOX/test
+  test -f $SANDBOX/test.bak.2
+}
+
+function test_make_backup__handle_existing_same_backup() {
+  cat >$SANDBOX/test << EOF
+  this is
+  a test file
+EOF
+  cp $SANDBOX/test $SANDBOX/test.bak
+  make_backup $SANDBOX/test
+  test ! -f $SANDBOX/test.bak.0
+}
+
+
+###########################################################
+# TEST RUNNER CODE
+###########################################################
+
 PASS_COUNT=0
 TOTAL_COUNT=0
 
@@ -16,23 +79,17 @@ function cleanup() {
 trap cleanup EXIT
 
 function run_test() {
+  SANDBOX=$(mktemp -d)
   $1
-  if [ $? -ne 0 ]; then
-    result="PASS"
+  if [ $? -eq 0 ]; then
+    result="\e[0;32mPASS\e[m"
     let "PASS_COUNT+=1"   
   else
-    result="FAIL"
+    result="\e[7;31mFAIL\e[m"
   fi
   let "TOTAL_COUNT+=1"
 
   printf "$result   $1\n"
-}
-
-function test_echo_if_verbose_unset() {
-  test ! -z "$(VERBOSE= echo_if_verbose test)"
-}
-function test_echo_if_verbose_set() {
-  test -z "$(VERBOSE=1 echo_if_verbose test)"
 }
 
 #find all functions with names that start with "test_", then run them

@@ -39,7 +39,7 @@ main() {
       show_help
       exit 0
       ;;
-    -v|--VERBOSE)
+    -v|--verbose)
       VERBOSE=1
       ;;
     -f|--force)

@@ -119,7 +119,12 @@ trap cleanup EXIT
 
 function run_test() {
   SANDBOX=$(mktemp -d)
-  $1
+  if [ -z "$VERBOSE" ]; then
+    $1 &>/dev/null
+  else
+    $1
+  fi
+
   if [ $? -eq 0 ]; then
     result="\e[0;32mPASS\e[m"
     let "PASS_COUNT+=1"   
@@ -131,9 +136,28 @@ function run_test() {
   printf "$result   $1\n"
 }
 
-#find all functions with names that start with "test_", then run them
-for func_decl in $(declare -F | cut -d " " -f 3); do
-  if [[ $func_decl =~ ^test_ ]]; then
-    run_test "$func_decl"
-  fi
-done
+main() {
+  while :; do
+    case $1 in
+    -v|--verbose)
+      VERBOSE=1
+      ;;
+    -*)
+      die_with_help "Unknown option: $1"
+      ;;
+    esac
+    shift
+
+    if [ -z "$1" ]; then
+      break
+    fi
+  done
+  #find all functions with names that start with "test_", then run them
+  for func_decl in $(declare -F | cut -d " " -f 3); do
+    if [[ $func_decl =~ ^test_ ]]; then
+      run_test "$func_decl"
+    fi
+  done
+}
+
+main "$@"

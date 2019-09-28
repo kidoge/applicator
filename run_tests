@@ -2,14 +2,14 @@
 
 source "functions.sh"
 
-function test_echo_if_verbose_unset() {
+test_echo_if_verbose_unset() {
   test -z "$(VERBOSE= echo_if_verbose test)"
 }
-function test_echo_if_verbose_set() {
+test_echo_if_verbose_set() {
   test ! -z "$(VERBOSE=1 echo_if_verbose test)"
 }
 
-function test_make_backup__file_created() {
+test_make_backup__file_created() {
   cat >$SANDBOX/test << EOF
   this is
   a test file
@@ -18,7 +18,7 @@ EOF
   test -f $SANDBOX/test.bak
 }
 
-function test_make_backup__file_same_content() {
+test_make_backup__file_same_content() {
   cat >$SANDBOX/test << EOF
   this is
   a test file
@@ -27,7 +27,7 @@ EOF
   test -z "$(diff $SANDBOX/test $SANDBOX/test.bak)"
 }
 
-function test_make_backup__handle_existing_backup() {
+test_make_backup__handle_existing_backup() {
   cat >$SANDBOX/test << EOF
   this is
   a test file
@@ -37,7 +37,7 @@ EOF
   test -f $SANDBOX/test.bak.0
 }
 
-function test_make_backup__handle_multiple_existing_backups() {
+test_make_backup__handle_multiple_existing_backups() {
   cat >$SANDBOX/test << EOF
   this is
   a test file
@@ -49,7 +49,7 @@ EOF
   test -f $SANDBOX/test.bak.2
 }
 
-function test_make_backup__handle_existing_same_backup() {
+test_make_backup__handle_existing_same_backup() {
   cat >$SANDBOX/test << EOF
   this is
   a test file
@@ -59,41 +59,41 @@ EOF
   test ! -f $SANDBOX/test.bak.0
 }
 
-function test_prompt_text_mentions_argument() {
+test_prompt_text_mentions_argument() {
   [[ "$(echo o | promptOverwriteOrMerge testText)" =~ "testText" ]]
 }
 
-function test_overwrite_lowercase() {
+test_overwrite_lowercase() {
   echo o | promptOverwriteOrMerge testarg
   result=$?
   [[ $result -eq $PROMPT_RESPONSE_OVERWRITE ]]
 }
 
-function test_overwrite_uppercase() {
+test_overwrite_uppercase() {
   echo O | promptOverwriteOrMerge testarg
   result=$?
   [[ $result -eq $PROMPT_RESPONSE_OVERWRITE ]]
 }
 
-function test_merge_lowercase() {
+test_merge_lowercase() {
   echo m | promptOverwriteOrMerge testarg
   result=$?
   [[ $result -eq $PROMPT_RESPONSE_MERGE ]]
 }
 
-function test_merge_uppercase() {
+test_merge_uppercase() {
   echo M | promptOverwriteOrMerge testarg
   result=$?
   [[ $result -eq $PROMPT_RESPONSE_MERGE ]]
 }
 
-function test_skip_lowercase() {
+test_skip_lowercase() {
   echo s | promptOverwriteOrMerge testarg
   result=$?
   [[ $result -eq $PROMPT_RESPONSE_SKIP ]]
 }
 
-function test_skip_uppercase() {
+test_skip_uppercase() {
   echo S | promptOverwriteOrMerge testarg
   result=$?
   [[ $result -eq $PROMPT_RESPONSE_SKIP ]]
@@ -107,7 +107,7 @@ function test_skip_uppercase() {
 PASS_COUNT=0
 TOTAL_COUNT=0
 
-function cleanup() {
+cleanup() {
   if [ $PASS_COUNT -eq $TOTAL_COUNT ]; then
     printf "[[ \e[1;32mALL PASSED\e[m ]]\n"
   else
@@ -117,7 +117,7 @@ function cleanup() {
 
 trap cleanup EXIT
 
-function run_test() {
+run_test() {
   SANDBOX=$(mktemp -d)
   if [ -z "$VERBOSE" ]; then
     $1 &>/dev/null

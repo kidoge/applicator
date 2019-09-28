@@ -2,7 +2,6 @@
 
 source "functions.sh"
 
-
 function test_echo_if_verbose_unset() {
   test -z "$(VERBOSE= echo_if_verbose test)"
 }
@@ -60,10 +59,50 @@ EOF
   test ! -f $SANDBOX/test.bak.0
 }
 
+function test_prompt_text_mentions_argument() {
+  [[ "$(echo o | promptOverwriteOrMerge testText)" =~ "testText" ]]
+}
+
+function test_overwrite_lowercase() {
+  echo o | promptOverwriteOrMerge testarg
+  result=$?
+  [[ $result -eq $PROMPT_RESPONSE_OVERWRITE ]]
+}
+
+function test_overwrite_uppercase() {
+  echo O | promptOverwriteOrMerge testarg
+  result=$?
+  [[ $result -eq $PROMPT_RESPONSE_OVERWRITE ]]
+}
+
+function test_merge_lowercase() {
+  echo m | promptOverwriteOrMerge testarg
+  result=$?
+  [[ $result -eq $PROMPT_RESPONSE_MERGE ]]
+}
+
+function test_merge_uppercase() {
+  echo M | promptOverwriteOrMerge testarg
+  result=$?
+  [[ $result -eq $PROMPT_RESPONSE_MERGE ]]
+}
+
+function test_skip_lowercase() {
+  echo s | promptOverwriteOrMerge testarg
+  result=$?
+  [[ $result -eq $PROMPT_RESPONSE_SKIP ]]
+}
+
+function test_skip_uppercase() {
+  echo S | promptOverwriteOrMerge testarg
+  result=$?
+  [[ $result -eq $PROMPT_RESPONSE_SKIP ]]
+}
 
 ###########################################################
 # TEST RUNNER CODE
 ###########################################################
+
 
 PASS_COUNT=0
 TOTAL_COUNT=0

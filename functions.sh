@@ -1,3 +1,8 @@
+PROMPT_RESPONSE_OVERWRITE=1
+PROMPT_RESPONSE_MERGE=2
+PROMPT_RESPONSE_SKIP=3
+PROMPT_OPTION_TEXT="(O)verwrite, (M)erge, or (S)kip: "
+
 die() {
   printf 'ERROR: %s\n' "$1" >&2
   exit 1
@@ -39,11 +44,6 @@ make_backup() {
   fi
 }
 
-PROMPT_RESPOSE_OVERWRITE=1
-PROMPT_RESPONSE_MERGE=2
-PROMPT_RESPONSE_SKIP=3
-PROMPT_OPTION_TEXT="(O)verwrite, (M)erge, or (S)kip: "
-
 promptOverwriteOrMerge() {
   local file="$1"
 
@@ -67,12 +67,20 @@ promptOverwriteOrMerge() {
 
 install_config_file() {
   local file="$1"
-  local destination="${INSTALL_DIR}/$(basename ${file})"
+  local destination="$2"
 
   if [ ! -f $destination ]; then
     cp ${file} ${destination}
   else
     result=promptOverwriteOrMerge $destination
+    case "$result" in
+      $PROMPT_RESPONSE_OVERWRITE)
+        ;;
+      $PROMPT_RESPONSE_MERGE)
+        ;;
+      $PROMPT_RESPONSE_SKIP)
+        ;;
+    esac
   fi
 }
 

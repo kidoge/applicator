@@ -99,6 +99,20 @@ test_skip_uppercase() {
   [[ $result -eq $PROMPT_RESPONSE_SKIP ]]
 }
 
+test_file_does_not_exist() {
+  mkdir source
+  cat >source/test << EOF
+  this is
+  a test file
+EOF
+  mkdir destination
+  install_config_file source/test destination
+  ls destination
+  cat destination/test
+  test -z "$(diff source/test destination/test 2>&1)"
+}
+
+
 ###########################################################
 # TEST RUNNER CODE
 ###########################################################

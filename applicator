@@ -80,9 +80,9 @@ main() {
     fi
   done
 
-  echo FILES:
   for f in ${FILES[@]}; do
-    install_config_file $f
+    local destination="${INSTALL_DIR}/$(basename $f)"
+    install_config_file $f $destination
   done
 }
 

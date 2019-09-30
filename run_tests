@@ -10,53 +10,53 @@ test_echo_if_verbose_set() {
 }
 
 test_make_backup__file_created() {
-  cat >$SANDBOX/test << EOF
+  cat >test << EOF
   this is
   a test file
 EOF
-  make_backup $SANDBOX/test
-  test -f $SANDBOX/test.bak
+  make_backup test
+  test -f test.bak
 }
 
 test_make_backup__file_same_content() {
-  cat >$SANDBOX/test << EOF
+  cat >test << EOF
   this is
   a test file
 EOF
-  make_backup $SANDBOX/test
-  test -z "$(diff $SANDBOX/test $SANDBOX/test.bak)"
+  make_backup test
+  test -z "$(diff test test.bak)"
 }
 
 test_make_backup__handle_existing_backup() {
-  cat >$SANDBOX/test << EOF
+  cat >test << EOF
   this is
   a test file
 EOF
-  touch $SANDBOX/test.bak
-  make_backup $SANDBOX/test
-  test -f $SANDBOX/test.bak.0
+  touch test.bak
+  make_backup test
+  test -f test.bak.0
 }
 
 test_make_backup__handle_multiple_existing_backups() {
-  cat >$SANDBOX/test << EOF
+  cat >test << EOF
   this is
   a test file
 EOF
-  touch $SANDBOX/test.bak
-  touch $SANDBOX/test.bak.0
-  touch $SANDBOX/test.bak.1
-  make_backup $SANDBOX/test
-  test -f $SANDBOX/test.bak.2
+  touch test.bak
+  touch test.bak.0
+  touch test.bak.1
+  make_backup test
+  test -f test.bak.2
 }
 
 test_make_backup__handle_existing_same_backup() {
-  cat >$SANDBOX/test << EOF
+  cat >test << EOF
   this is
   a test file
 EOF
-  cp $SANDBOX/test $SANDBOX/test.bak
-  make_backup $SANDBOX/test
-  test ! -f $SANDBOX/test.bak.0
+  cp test test.bak
+  make_backup test
+  test ! -f test.bak.0
 }
 
 test_prompt_text_mentions_argument() {
@@ -119,16 +119,21 @@ trap cleanup EXIT
 
 run_test() {
   SANDBOX=$(mktemp -d)
+  pushd $SANDBOX &>/dev/null
   if [ -z "$VERBOSE" ]; then
     $1 &>/dev/null
   else
     $1
   fi
+  result=$?
+  popd &>/dev/null
 
-  if [ $? -eq 0 ]; then
+  if [ $result -eq 0 ]; then
+    rm -rf $SANDBOX
     result="\e[0;32mPASS\e[m"
     let "PASS_COUNT+=1"   
   else
+    echo $SANDBOX
     result="\e[7;31mFAIL\e[m"
   fi
   let "TOTAL_COUNT+=1"

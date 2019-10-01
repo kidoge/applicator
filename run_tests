@@ -60,7 +60,7 @@ EOF
 }
 
 test_prompt_text_mentions_argument() {
-  [[ "$(echo o | promptOverwriteOrMerge testText)" =~ "testText" ]]
+  [[ "$(echo o | promptOverwriteOrMerge testText)" =~ "$PROMPT_OPTION_TEXT" ]]
 }
 
 test_overwrite_lowercase() {
@@ -99,19 +99,48 @@ test_skip_uppercase() {
   [[ $result -eq $PROMPT_RESPONSE_SKIP ]]
 }
 
-test_file_does_not_exist() {
+test_copies_if_file_does_not_exist() {
   mkdir source
   cat >source/test << EOF
   this is
   a test file
 EOF
   mkdir destination
-  install_config_file source/test destination
-  ls destination
-  cat destination/test
+  install_config_file source/test destination/test
   test -z "$(diff source/test destination/test 2>&1)"
 }
 
+test_nop_if_skipped() {
+  mkdir source
+  cat >source/test << EOF
+  this is
+  a test file
+EOF
+
+  mkdir destination
+  cat >expected << EOF
+  here is a different file
+EOF
+  cp expected destination/test
+
+  echo s | install_config_file source/test destination/test
+  test -z "$(diff expected destination/test 2>&1)"
+}
+
+test_replace_if_overwrite() {
+  mkdir source
+  cat > source/testfile << EOF
+  this is the new file
+EOF
+
+  mkdir destination
+  cat > destination/file << EOF
+  this should not exist
+EOF
+
+  echo o | install_config_file source/testfile destination/file
+  test -z "$(diff source/testfile destination/file 2>&1)"
+}
 
 ###########################################################
 # TEST RUNNER CODE

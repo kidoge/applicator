@@ -30,7 +30,7 @@ make_backup() {
 
   while [ -f $backup ]; do
     if diff ${backup} ${destination} &>/dev/null; then
-      echo "Identical backup found at: ${backup}"
+      echo "Skipping creating backup... Identical backup found at: ${backup}"
       return 0
     fi
     backup="${backup_basename}.${increment}"
@@ -71,14 +71,19 @@ install_config_file() {
 
   if [ ! -f $destination ]; then
     cp ${file} ${destination}
+    echo_if_verbose "A new file created at: ${destination}"
   else
-    result=promptOverwriteOrMerge $destination
+    promptOverwriteOrMerge $destination
+    local result=$?
     case "$result" in
       $PROMPT_RESPONSE_OVERWRITE)
+        cp ${file} ${destination}
         ;;
       $PROMPT_RESPONSE_MERGE)
+        vimdiff $destination $file
         ;;
       $PROMPT_RESPONSE_SKIP)
+        # Do nothing...
         ;;
     esac
   fi

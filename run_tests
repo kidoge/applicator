@@ -146,6 +146,16 @@ EOF
   test -z "$(diff source/testfile destination/file 2>&1)"
 }
 
+test_resolve_username_as_repo() {
+  local repo="$(resolve_repo username)"
+  [[ $repo == "https://github.com/username/applicator-config" ]]
+}
+
+test_resolve_username_and_repo() {
+  local repo="$(resolve_repo test:test-config)"
+  [[ $repo == "https://github.com/test/test-config" ]]
+}
+
 ###########################################################
 # TEST RUNNER CODE
 ###########################################################

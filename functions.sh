@@ -20,6 +20,19 @@ echo_if_verbose() {
   fi
 }
 
+resolve_repo() {
+  local input="$1"
+  if [[ "$input" =~ ":" ]]; then
+    local user="$(echo $input | sed -En "s/^(.*):.*/\1/p")"
+    local repo="$(echo $input | sed -En "s/^.*:(.*)/\1/p")"
+  else
+    local user="$1"
+    local repo="applicator-config"
+  fi
+
+  echo "https://github.com/$user/$repo"
+}
+
 make_backup() {
   local destination="$1"
 

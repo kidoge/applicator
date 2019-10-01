@@ -60,6 +60,10 @@ EOF
 }
 
 test_prompt_text_mentions_argument() {
+  [[ "$(echo o | promptOverwriteOrMerge testText)" =~ "testText" ]]
+}
+
+test_prompt_text_contains_overwrite_merge_skip_dialog() {
   [[ "$(echo o | promptOverwriteOrMerge testText)" =~ "$PROMPT_OPTION_TEXT" ]]
 }
 

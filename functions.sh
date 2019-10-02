@@ -90,9 +90,11 @@ install_config_file() {
     local result=$?
     case "$result" in
       $PROMPT_RESPONSE_OVERWRITE)
+        make_backup $destination
         cp ${file} ${destination}
         ;;
       $PROMPT_RESPONSE_MERGE)
+        make_backup $destination
         vimdiff $destination $file
         ;;
       $PROMPT_RESPONSE_SKIP)

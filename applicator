@@ -3,7 +3,7 @@
 # Globbing to include hidden files (e.g. when looping through files with *)
 shopt -s dotglob 
 
-source "functions.sh"
+source "$(dirname "$0")/functions.sh"
 
 INSTALL_DIR="${HOME}"
 
@@ -24,7 +24,6 @@ get_input_files() {
 
   if [ -d "$input" ]; then
     for f in $1/*; do
-      echo i2 $f
       get_input_files $f
     done
   fi
@@ -76,7 +75,19 @@ main() {
     if [ -e "$f" ]; then
       get_input_files $f
     else 
-      die "$f does not exist"
+      #check github
+      local repo=$(resolve_repo $f)
+      if ! check_repo $repo; then
+          die "$f does not exist"
+      fi
+      local clone_dir=$(mktemp -d)
+      clone_repo $repo $clone_dir
+      local result=$?
+      if $result; then
+        die "Repository could not be cloned"
+      else
+        get_input_files $clone_dir
+      fi
     fi
   done
 

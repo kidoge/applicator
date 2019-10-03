@@ -156,6 +156,20 @@ test_resolve_username_and_repo() {
   [[ $repo == "https://github.com/test/test-config" ]]
 }
 
+test_check_repo() {
+  check_repo "https://github.com/applicator-test/applicator-config"
+  [[ $? -eq 0 ]]
+}
+
+test_clone_repo_from_github() {
+  mkdir repo
+  ls repo
+  clone_repo https://github.com/applicator-test/applicator-config repo
+  [[ "$(cat repo/.1.conf)" == "test1" ]] &&
+      [[ "$(cat repo/.2.conf)" == "test2" ]] &&
+      [[ "$(cat repo/plainfile)" == "does not start with dot" ]]
+}
+
 ###########################################################
 # TEST RUNNER CODE
 ###########################################################

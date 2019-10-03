@@ -33,6 +33,17 @@ resolve_repo() {
   echo "https://github.com/$user/$repo"
 }
 
+check_repo() {
+  local repo="$1"
+  git ls-remote $repo &>/dev/null
+}
+
+clone_repo() {
+  local repo="$1"
+  local dir="$2"
+  git clone $repo $dir
+}
+
 make_backup() {
   local destination="$1"
 

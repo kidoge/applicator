@@ -8,7 +8,16 @@ source "$(dirname "$0")/functions.sh"
 INSTALL_DIR="${HOME}"
 
 VERBOSE=0
-FORCE=0
+
+show_help() {
+  cat << EOF
+Usage: bash applicator [OPTION]... [TARGET]...
+  -h, --help, -?    show help
+  -v, --verbose     verbose output
+  -d                where to apply config files, defaults to home directory
+EOF
+  echo $help
+}
 
 FILES=()
 get_input_files() {
@@ -40,9 +49,6 @@ main() {
       ;;
     -v|--verbose)
       VERBOSE=1
-      ;;
-    -f|--force)
-      FORCE=1
       ;;
     -d)
       if [ "$2" ]; then

@@ -116,14 +116,3 @@ install_config_file() {
   fi
 }
 
-show_help() {
-  cat << EOF
-Usage: bash applicator [OPTION]... [TARGET]...
-  -h, --help, -?    show help
-  -v, --verbose     verbose output
-  -f, --force       apply all changes without review
-  -d                where to apply config files, defaults to home directory
-EOF
-  echo $help
-}
-

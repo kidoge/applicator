@@ -41,7 +41,8 @@ check_repo() {
 clone_repo() {
   local repo="$1"
   local dir="$2"
-  git clone $repo $dir
+  echo "Cloning $repo"
+  git clone $repo $dir &>/dev/null
 }
 
 make_backup() {

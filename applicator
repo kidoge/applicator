@@ -83,7 +83,7 @@ main() {
       local clone_dir=$(mktemp -d)
       clone_repo $repo $clone_dir
       local result=$?
-      if $result; then
+      if [ ! $result ]; then
         die "Repository could not be cloned"
       else
         get_input_files $clone_dir

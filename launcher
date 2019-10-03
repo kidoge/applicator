@@ -1,11 +1,14 @@
 #!/bin/bash
 
-MASTER_TEMP_DIR=$(mktemp -d)
-
 cleanup() {
   rm -rf $MASTER_TEMP_DIR
 }
-trap cleanup EXIT
 
-git clone --depth 1 https://github.com/kidoge/applicator $MASTER_TEMP_DIR
-$MASTER_TEMP_DIR/applicator $@
+main() {
+  MASTER_TEMP_DIR=$(mktemp -d /tmp/applicator.XXXXXX)
+  trap cleanup EXIT
+  git clone --depth 1 https://github.com/kidoge/applicator $MASTER_TEMP_DIR
+  $MASTER_TEMP_DIR/applicator $@
+}
+
+main $@

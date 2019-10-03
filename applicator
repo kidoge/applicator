@@ -86,14 +86,17 @@ main() {
       if ! check_repo $repo; then
           die "$f does not exist"
       fi
-      local clone_dir=$(mktemp -d)
+
+      local clone_dir=$(mktemp -d /tmp/applicator.config.XXXXXX)
       clone_repo $repo $clone_dir
       local result=$?
       if [ ! $result ]; then
+        rm -rf $clone_dir
         die "Repository could not be cloned"
-      else
-        get_input_files $clone_dir
       fi
+
+      get_input_files $clone_dir
+      rm -rf $clone_dir
     fi
   done
 

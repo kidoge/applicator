@@ -5,6 +5,13 @@ shopt -s dotglob
 
 source "$(dirname "$0")/functions.sh"
 
+function cleanup {
+  if [ -e "$clone_dir" ]; then
+    rm -rf "$clone_dir"
+  fi
+}
+trap cleanup EXIT
+
 INSTALL_DIR="${HOME}"
 
 VERBOSE=0
@@ -86,17 +93,14 @@ main() {
       if ! check_repo $repo; then
           die "$f does not exist"
       fi
-
-      local clone_dir=$(mktemp -d /tmp/applicator.config.XXXXXX)
+      clone_dir=$(mktemp -d /tmp/applicator.config.XXXXXX)
       clone_repo $repo $clone_dir
       local result=$?
       if [ ! $result ]; then
-        rm -rf $clone_dir
         die "Repository could not be cloned"
       fi
 
       get_input_files $clone_dir
-      rm -rf $clone_dir
     fi
   done
 
